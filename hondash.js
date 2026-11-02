@@ -20,7 +20,7 @@
   const el = (id) => document.getElementById(id);
   const $ = {
     support: el("support"), status: el("status"), selected: el("selected"),
-    connect: el("connect"), disconnect: el("disconnect"),
+    connect: el("connect"), connectAll: el("connectAll"), disconnect: el("disconnect"),
     command: el("command"), send: el("send"), probe: el("probe"),
     download: el("download"), clear: el("clear"),
     log: el("log"), count: el("count"), responses: el("responses"),
@@ -70,6 +70,7 @@
 
   function updateControls() {
     $.connect.disabled = !!port || busy || closing;
+    $.connectAll.disabled = !!port || busy || closing;
     $.disconnect.disabled = !port || closing;
     $.send.disabled = !port || busy || closing;
     $.probe.disabled = !port || busy || closing;
@@ -102,15 +103,17 @@
   }
 
   // Não executa comandos na ECU até que o usuário toque em Consultar/Teste inicial.
-  async function connect() {
+  // useFilter=false abre a lista sem filtro, para diagnosticar lista vazia.
+  async function connect(useFilter = true) {
     if (!checkEnvironment() || port || busy) return;
     busy = true;
     updateControls();
     try {
       // Chrome apresenta os dispositivos SPP já pareados, inclusive o "OBD".
-      const selectedPort = await navigator.serial.requestPort({
-        filters: [{ bluetoothServiceClassId: SPP_UUID }]
-      });
+      log("INFO", "Abrindo lista de portas " + (useFilter ? "com filtro SPP" : "sem filtro") + ".");
+      const options = { allowedBluetoothServiceClassIds: [SPP_UUID] };
+      if (useFilter) options.filters = [{ bluetoothServiceClassId: SPP_UUID }];
+      const selectedPort = await navigator.serial.requestPort(options);
       await selectedPort.open({ baudRate: 9600, bufferSize: 4096 });
       port = selectedPort;
       closing = false;
@@ -121,7 +124,7 @@
       log("INFO", "SPP conectado. O baudRate é obrigatório na API, mas ignorado pela ponte Bluetooth.");
       readerTask = readLoop(selectedPort);
     } catch (err) {
-      log("ERRO", "Conexão: " + errorText(err));
+      log("ERRO", "Conexão (" + (err && err.name) + "): " + errorText(err));
       setStatus("Não conectado", "err");
       // Caso a porta tenha sido aberta e a inicialização falhe.
       if (port) await disconnect();
@@ -335,7 +338,8 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  $.connect.addEventListener("click", connect);
+  $.connect.addEventListener("click", () => void connect(true));
+  $.connectAll.addEventListener("click", () => void connect(false));
   $.disconnect.addEventListener("click", () => void disconnect());
   $.send.addEventListener("click", single);
   $.probe.addEventListener("click", probe);
@@ -354,4 +358,11 @@
   checkEnvironment();
   updateControls();
   log("INFO", "Bancada iniciada. Versão experimental; os comandos não são OBD-II ELM327.");
+  const chrome = /Chrome\/(\d+)/.exec(navigator.userAgent || "");
+  log("INFO", "Chrome " + (chrome ? chrome[1] : "não identificado") + " · Web Serial: " + ("serial" in navigator ? "sim" : "não"));
+  if ("serial" in navigator && navigator.serial.getPorts) {
+    navigator.serial.getPorts()
+      .then((ports) => log("INFO", "Portas já autorizadas neste site: " + ports.length))
+      .catch((err) => log("ERRO", "getPorts: " + errorText(err)));
+  }
 })();

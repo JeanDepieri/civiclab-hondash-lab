@@ -25,8 +25,10 @@
       <p class="muted small">1. Ative o Bluetooth e pareie o scanner <b>OBD</b> nas configurações do Android. 2. Deixe a chave em ON (posição II) ou motor em marcha lenta. 3. Feche o HonDash. 4. Toque em Conectar e selecione a porta SPP.</p>
       <div class="row">
         <button id="connect" class="btn primary" type="button">Conectar OBD</button>
+        <button id="connectAll" class="btn" type="button">Conectar sem filtro</button>
         <button id="disconnect" class="btn" type="button" disabled>Desconectar</button>
       </div>
+      <p class="muted small">Lista vazia? Confira se o OBD aparece como pareado no Android e use <b>Conectar sem filtro</b>.</p>
       <div class="lab-status" aria-live="polite">
         <div><span class="muted">Estado</span><b id="status">Desconectado</b></div>
         <div><span class="muted">Porta</span><span id="selected">Nenhum scanner selecionado</span></div>
