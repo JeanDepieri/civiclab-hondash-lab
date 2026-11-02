@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>CivicLab · HonDash Bluetooth (bancada)</title>
+  <link rel="stylesheet" href="diagnostico.css">
+  <link rel="stylesheet" href="hondash.css">
+  <script src="hondash.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="top-row">
+      <p class="brand">CIVICLAB <span>//</span> HONDASH LAB</p>
+      <a class="btn small" href="index.html">← Início</a>
+    </div>
+    <p class="mode-tag">EXPERIMENTAL · BLUETOOTH CLASSIC SPP · LEITURA HEXADECIMAL</p>
+  </header>
+  <main class="lab-main">
+    <div class="notice" role="note">Teste em local seguro e com o carro parado. Os comandos abaixo são somente consultas observadas no HonDash; não altere configurações da ECU. Feche o aplicativo oficial antes de conectar.</div>
+    <section class="card" aria-labelledby="bt-title">
+      <h2 id="bt-title">Conectar ao scanner OBD</h2>
+      <p id="support" class="notice" role="status">Verificando Web Serial…</p>
+      <p class="muted small">1. Ative o Bluetooth e pareie o scanner <b>OBD</b> nas configurações do Android. 2. Deixe a chave em ON (posição II) ou motor em marcha lenta. 3. Feche o HonDash. 4. Toque em Conectar e selecione a porta SPP.</p>
+      <div class="row">
+        <button id="connect" class="btn primary" type="button">Conectar OBD</button>
+        <button id="disconnect" class="btn" type="button" disabled>Desconectar</button>
+      </div>
+      <div class="lab-status" aria-live="polite">
+        <div><span class="muted">Estado</span><b id="status">Desconectado</b></div>
+        <div><span class="muted">Porta</span><span id="selected">Nenhum scanner selecionado</span></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="read-title">
+      <h2 id="read-title">Consultas conhecidas</h2>
+      <p class="muted small">Todas são consultas binárias de 5 bytes extraídas da captura de 01/11/2026. Os identificadores ainda <b>não</b> estão mapeados para RPM, ECT ou sensores específicos.</p>
+      <label class="lab-label" for="command">Bloco para consulta</label>
+      <select id="command"></select>
+      <div class="row">
+        <button id="send" class="btn primary" type="button" disabled>Consultar uma vez</button>
+        <button id="probe" class="btn" type="button" disabled>Teste inicial (5 consultas)</button>
+      </div>
+      <p class="muted small">O teste inicial executa uma vez a sequência 78 → 00 → 10 → 20 → 3C, em ordem, com espera de resposta de até 3,5 s por consulta. Não inicia monitoramento contínuo.</p>
+      <div class="lab-metrics">
+        <div><span>Consultas enviadas</span><strong id="count">0</strong></div>
+        <div><span>Respostas válidas</span><strong id="responses">0</strong></div>
+      </div>
+      <p class="lab-last"><b>Última resposta:</b> <span id="last">Ainda sem resposta.</span></p>
+    </section>
+
+    <section class="card" aria-labelledby="log-title">
+      <h2 id="log-title">Registro da comunicação</h2>
+      <p class="muted small">TX = enviado · RX = recebido (bruto) · OK = resposta remontada com checksum válido. Somente local: não enviamos esses bytes a nenhum servidor.</p>
+      <div class="row">
+        <button id="download" class="btn primary" type="button" disabled>Exportar log JSON</button>
+        <button id="clear" class="btn" type="button">Limpar log</button>
+      </div>
+      <pre id="log" class="lab-console" aria-label="Pacotes enviados e recebidos" role="log" aria-live="off"></pre>
+      <p id="hint" class="muted small">Se houver conexão, mas sem respostas, tente a chave ON e confirme que nenhum outro app está usando o OBD.</p>
+    </section>
+
+    <footer class="muted small">Bancada experimental · sem telemetria para o modo Dirigir · dados não interpretados não devem orientar decisões de direção ou manutenção.</footer>
+  </main>
+</body>
+</html>
